@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type Portion int
 
 const (
@@ -14,15 +16,26 @@ type Udon struct {
 	ebiten   uint
 }
 
-func NewUdon(p Portion, aburaage bool, ebiten uint) *Udon {
+type Option struct {
+	men      Portion
+	aburaage bool
+	ebiten   uint
+}
+
+func NewUdon(opt Option) *Udon {
+	// ゼロ値に対するデフォルト値処理は関数 / メソッド内部で行う
+	// 朝食時間は海老天1本無料
+	if opt.ebiten == 0 && time.Now().Hour() < 10 {
+		opt.ebiten = 1
+	}
 	return &Udon{
-		men:      p,
-		aburaage: aburaage,
-		ebiten:   ebiten,
+		men:      opt.men,
+		aburaage: opt.aburaage,
+		ebiten:   opt.ebiten,
 	}
 }
 
-var tempuraUdon = NewUdon(Large, false, 2)
+var tempuraUdon = NewUdon(Option{})
 
 func NewKakeUdon(p Portion) *Udon {
 	return &Udon{
