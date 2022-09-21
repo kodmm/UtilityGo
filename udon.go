@@ -1,7 +1,5 @@
 package main
 
-import "time"
-
 type Portion int
 
 const (
@@ -22,20 +20,46 @@ type Option struct {
 	ebiten   uint
 }
 
-func NewUdon(opt Option) *Udon {
-	// ゼロ値に対するデフォルト値処理は関数 / メソッド内部で行う
-	// 朝食時間は海老天1本無料
-	if opt.ebiten == 0 && time.Now().Hour() < 10 {
-		opt.ebiten = 1
-	}
-	return &Udon{
-		men:      opt.men,
-		aburaage: opt.aburaage,
-		ebiten:   opt.ebiten,
+type fluentOpt struct {
+	men      Portion
+	aburaage bool
+	ebiten   uint
+}
+
+func NewUdon(p Portion) *fluentOpt {
+	// デフォルトはコンストラクタ関数で設定
+
+	// 必須オプションはここだけに付与
+	return &fluentOpt{
+		men:      p,
+		aburaage: false,
+		ebiten:   1,
 	}
 }
 
-var tempuraUdon = NewUdon(Option{})
+func (o *fluentOpt) Aburaage() *fluentOpt {
+	o.aburaage = true
+	return o
+}
+
+func (o *fluentOpt) Ebiten(n uint) *fluentOpt {
+	o.ebiten = n
+	return o
+}
+
+func (o *fluentOpt) Order() *Udon {
+	return &Udon{
+		men:      o.men,
+		aburaage: o.aburaage,
+		ebiten:   o.ebiten,
+	}
+}
+
+func useFluentInterface() {
+	oomoriKitsune := NewUdon(Large).Aburaage().Order()
+}
+
+var tempuraUdon = NewUdon(Regular)
 
 func NewKakeUdon(p Portion) *Udon {
 	return &Udon{
