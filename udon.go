@@ -26,15 +26,30 @@ type fluentOpt struct {
 	ebiten   uint
 }
 
-func NewUdon(p Portion) *fluentOpt {
-	// デフォルトはコンストラクタ関数で設定
+type OptFunc func(r *Udon)
 
-	// 必須オプションはここだけに付与
-	return &fluentOpt{
-		men:      p,
-		aburaage: false,
-		ebiten:   1,
+func NewUdon(opts ...OptFunc) *Udon {
+	r := &Udon{}
+	for _, opt := range opts {
+		opt(r)
 	}
+	return r
+}
+
+func OptMen(p Portion) OptFunc {
+	return func(r *Udon) { r.men = p }
+}
+
+func OptAburaage() OptFunc {
+	return func(r *Udon) { r.aburaage = true }
+}
+
+func OptEbiten(n uint) OptFunc {
+	return func(r *Udon) { r.ebiten = n }
+}
+
+func useFunctionOption() {
+	tokuseiUdon := NewUdon(OptAburaage(), OptEbiten(3))
 }
 
 func (o *fluentOpt) Aburaage() *fluentOpt {
@@ -55,11 +70,11 @@ func (o *fluentOpt) Order() *Udon {
 	}
 }
 
-func useFluentInterface() {
-	oomoriKitsune := NewUdon(Large).Aburaage().Order()
-}
+// func useFluentInterface() {
+// 	oomoriKitsune := NewUdon(Large).Aburaage().Order()
+// }
 
-var tempuraUdon = NewUdon(Regular)
+// var tempuraUdon = NewUdon(Regular)
 
 func NewKakeUdon(p Portion) *Udon {
 	return &Udon{
