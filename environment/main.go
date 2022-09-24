@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -21,4 +22,17 @@ func main() {
 		os.Exit(1)
 	}
 	log.Println(c)
+
+	// 文字列結合
+	src := []string{"A", "B", "C", "D"}
+	var builder strings.Builder
+	builder.Grow(4)
+	for i, word := range src {
+		if i != 0 {
+			builder.WriteByte(' ')
+		}
+		builder.WriteString(word)
+	}
+	log.Println(builder.String())
+
 }
