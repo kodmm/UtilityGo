@@ -46,4 +46,30 @@ func main() {
 	fmt.Println("filepath", filepath)
 	fmt.Println("fiveMinuteBefore", fiveMinuteBefore)
 	fmt.Println("fiveMinuteAfter", fiveMinuteAfter)
+
+	// 存在しない月日を引数に渡すと正規化してくれる
+	jst, _ := time.LoadLocation("Asia/Tokyo")
+	now = time.Date(2021, 6, 31, 20, 56, 00, 000, jst)
+	nextMonth := now.AddDate(0, 1, 0)
+	fmt.Println("nextMonth: ", nextMonth)
+
+	// 存在しない月日を引数に渡すと正規化してくれる
+	normal := time.Date(2021, 5, 31, 20, 56, 00, 000, jst)
+	fmt.Println("normal: ", normal)
+	// normal:  2021-07-01 20:56:00 +0900 JST
+
+	fmt.Println(NextMonth(normal))
+
+}
+
+// 月末を考慮した翌月を計算する関数
+func NextMonth(t time.Time) time.Time {
+	year1, month2, day := t.Date()
+	first := time.Date(year1, month2, 1, 0, 0, 0, 0, time.UTC)           ///20210501
+	year2, month2, _ := first.AddDate(0, 1, 0).Date()                    // 20210601
+	nextMonthTime := time.Date(year2, month2, day, 0, 0, 0, 0, time.UTC) //20210701
+	if month2 != nextMonthTime.Month() {
+		return first.AddDate(0, 2, -1) // 翌月末
+	}
+	return nextMonthTime
 }
