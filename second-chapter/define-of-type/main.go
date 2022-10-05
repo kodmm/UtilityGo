@@ -51,3 +51,27 @@ func (s Season) Price(price float64) bool {
 	}
 	return s
 }
+
+type SensorData struct {
+	SensorType string
+	ModelID string
+	Value float32
+}
+
+// ! 悪い例
+func ReadValue(r SensorData) float32 {
+	if r.SensorType == "Fahrenheit" { // 華氏の場合は摂氏に変換
+		return (r.Value * 9 / 5) + 32
+	}
+	return r.Value
+}
+
+// * 良い例
+func (r SensorData) ReadValue() float32 {
+	if r.SensorType == "Fahrenheit" { // 華氏の場合は摂氏に変換
+		return (r.Value * 9 / 5) + 32
+	}
+	return r.Value
+}
+
+// * 構造体はレシーバを定義する方がテストもしやすく再利用性も良い
