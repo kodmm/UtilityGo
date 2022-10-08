@@ -20,4 +20,13 @@ func main() {
 	//! var変数宣言でも、ポインター型の場合はインスタンス作成されない。　X: p4.FirstName
 	var p4 *Person
 	fmt.Println(p4)
+
+}
+
+// NewPerson ファクトリ関数
+func NewPerson(first, last string) *Person {
+	return &Person{
+		FirstName: first,
+		LastName:  last,
+	}
 }
