@@ -61,3 +61,8 @@ type WebServiceConfig struct {
 	Database
 	FileStorage
 }
+
+type Person struct {
+	Name     string `json:"name" validate:"required" gorm:"column:name"`
+	BarthDay string `json xml: "name"` // 短縮表記
+}
