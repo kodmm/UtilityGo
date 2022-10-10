@@ -64,6 +64,27 @@ func (im ImmutableMoney) SetCurrency(c Currency) ImmutableMoney {
 	}
 }
 
-func main() {
+type Node struct {
+	name   string
+	depth  int
+	parent *Node
+}
 
+// 初期化しないと各フィールドはゼロ値になる
+// ms.name は文字列 depthはゼロ parentはnil
+var n Node
+
+type Status int
+
+const (
+	DefaultStatus Status = iota
+	ActiveStatus
+	CloseStatus
+)
+
+type Visitor struct {
+	Status Status // ゼロ値であるDefaultStatusが設定済みとなる
+}
+
+func main() {
 }
