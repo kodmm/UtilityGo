@@ -1,3 +1,3 @@
-module github.com/kodmm/UtilityGo
+module github.com/kodmm/UtilityGo/second-chapter
 
 go 1.19

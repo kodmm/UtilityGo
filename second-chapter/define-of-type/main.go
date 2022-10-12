@@ -75,3 +75,10 @@ func (r SensorData) ReadValue() float32 {
 }
 
 // * 構造体はレシーバを定義する方がテストもしやすく再利用性も良い
+
+var i int
+type ErrorCode int
+var e ErrorCode
+
+i = int(e)
+e = i

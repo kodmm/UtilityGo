@@ -27,7 +27,6 @@ func main() {
 			Title: "Real World HTTP",
 		},
 	}
-
 	// Bookのメソッドが利用可能
 	fmt.Println(ob.GetAmazonURL())
 
@@ -44,7 +43,7 @@ func main() {
 	}
 
 	//! ambiguous selector ws.Addressというエラー
-	fmt.Println(ws.Address)
+	// fmt.Println(ws.Address)
 	// このように埋め込んだ構造体のどちらを参照したいか明示する
 	fmt.Println(ws.Database.Address)
 }
