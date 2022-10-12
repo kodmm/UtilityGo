@@ -39,6 +39,10 @@ func main() {
 
 	// 使い終わったらPut()でPoolに戻して次回に備える
 	pool.Put(b)
+
+	c := Child{}
+	c.m1() // Parent: オーバライド失敗
+	c.m2()
 }
 
 // BigStructのインスタンスを作成するファクトリー関数
@@ -53,4 +57,23 @@ func (b *BigStruct) Release() {
 	// 初期化してから格納
 	b.Member = ""
 	pool.Put(b)
+}
+
+type Parent struct{}
+
+func (p Parent) m1() {
+	// 親は子に埋め込まれているが、親は子のことは知らないので、親のm2が呼ばれる
+	p.m2()
+}
+
+func (p Parent) m2() {
+	fmt.Println("Parent")
+}
+
+type Child struct {
+	Parent
+}
+
+func (p Child) m2() {
+	fmt.Println("Child")
 }
