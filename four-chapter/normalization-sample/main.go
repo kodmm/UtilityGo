@@ -104,4 +104,28 @@ func main() {
 	default: // どれにもマッチしない場合
 		log.Printf("好きなものは: %v\n", v)
 	}
+
+	var fishList = []Fish{"鯖", "鰤", "鮪"}
+	var fishNameList = fishList.([]string) //! このように一括変換はできない。
+	var anyList []any = fishList //! anyへの一括アップキャストもできない
+
+	// anyの値を型のあるスライスに代入
+	var fishList2 = []any{"鯖", "鰤","鮪"}
+	fishNames := make([]string, len(fishList2))
+	for i, f := range fishList2 {
+		// ダウンキャストは型アサーションが必要
+		if fn, ok := f.(string); ok {
+			fishNames[i] = fn
+		}
+	}
+
+	// 型のあるスライスをanyのスライスに代入
+	fibonacciNumbers := []int{1, 1, 2, 3, 5, 8}
+	anyValues := make([]int, len(fibonacciNumbers))
+	for i, fn := range fibonacciNumbers {
+		// アップキャストは型アサーション不要だが要素ごとに格納する必要あり
+		anyValues[i] = fn
+	}
 }
+
+type Fish interface{}
