@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"io"
+	"log"
 	"os"
 	"strings"
 
@@ -51,6 +53,9 @@ func NormalizeString(i string) (string, error) {
 	return w.String(), nil
 }
 
+// ジェネリクスが使われるcase
+// TODO 返り値がanyで、受け取り側で毎回キャストが必要
+// ポインターと値のうち、ポインターだけを受け取れるようにしたい
 func Stringify[T Stringer](s []T) (ret []string) {
 	for _, v := range s {
 		ret = append(ret, v.String())
@@ -76,4 +81,27 @@ var ieyasu = map[string]any{
 	"生まれ": 1543
 }
 
-func main() {}
+func main() {
+	// "favorite"というキーに対して、"銭形平次"という値を設定する。
+	ctx := context.WithValue(context.Background(), "favorite", "銭形平次")
+
+	// ctx.Value()はinterface{}なので変換が必要
+	// 必ず、okで成功可否を確認すること
+	if s, ok := ctx.Value("favorite").(string); ok {
+		// sはstring型
+		log.Printf("私の好きなものは%sです\n", s)
+	}
+	
+	// あるいは型スイッチ
+	// 同じvだが、case節ごとにvの型が変わる
+	switch v := ctx.Value("favorite").(type) {
+	case string:
+		log.Printf("好きなものは: %s\n", v)
+	case int:
+		log.Printf("好きな数値は: %d\n", v)
+	case complex128:
+		log.Printf("好きな複素数: %f\n", v)
+	default: // どれにもマッチしない場合
+		log.Printf("好きなものは: %v\n", v)
+	}
+}
