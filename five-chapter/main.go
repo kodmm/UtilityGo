@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -83,6 +85,29 @@ func LoadConfig(configFilePath string) (*Config, error) {
 	return cfg, nil
 }
 
+func fetchSession(ctx context.Context, sessionID string) (*Session, error) {
+	var s *Session
+
+	query := `SELECT * FROM sessions WHERE session_id = $1;`
+	err := db.QueryRowContext(ctx, query, sessionID).Scan(&s)
+	if err != nil {
+		return nil, fmt.Errorf("fetch session, sessionID = %s: %w", sessionID, err)
+	}
+	return s, nil
+}
+
 func main() {
+	isNew := false
+	u, err := fetchSession(ctx, sessionID)
+	if err != nil {
+		// DBレイヤーから返却されたエラーの詳細を調べてハンドリングできる
+		// 比較できないエラーや==で合致しなかった場合にエラーがIs()メソッドを実装している場合は、
+		// 実装されているIs()メソッドを使って評価し、合致した場合は結果を返す
+		// Is()を実装していない場合やIs()で合致しなかった場合はエラーをUnwrap()し、次のアンラップされたエラーと評価する。
+		// 最終的にUnwrap()して得られるエラーがなくなった場合は合致しなかった結果を返す
+		if !errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("fail to fetch session: %w", err)
+		}
+	}
 
 }
