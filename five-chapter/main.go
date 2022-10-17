@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 )
@@ -107,6 +108,16 @@ func main() {
 		// 最終的にUnwrap()して得られるエラーがなくなった場合は合致しなかった結果を返す
 		if !errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("fail to fetch session: %w", err)
+		}
+	}
+
+	if _, err := LoadConfig("non-existing"); err != nil {
+		// errors.As の中でエラーをアンラップして詳細なエラーを調べられる
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) {
+			// ...
+		} else {
+			// ...
 		}
 	}
 
