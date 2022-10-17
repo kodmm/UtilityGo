@@ -30,4 +30,13 @@ func main() {
 		//TODO: どのような処理で、どのような引数をもとに、どんなエラーが出たのかを書く
 		fmt.Errorf("fail to get invited user with email(%s): %w", email, err)
 	}
+
+	var b []byte
+	err := retry.Retry(2, 0, func() error {
+		_, ierr := tcpClient.Read(b)
+		return ierr
+	})
+	if err != nil {
+		// error handling
+	}
 }
