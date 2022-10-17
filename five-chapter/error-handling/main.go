@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 )
 
 func fetchCapacity(ctx context.Context, key string) (int, error) {
@@ -39,4 +40,12 @@ func main() {
 	if err != nil {
 		// error handling
 	}
+
+	//! log.Fatal()を呼び出すとdeferでCloseが呼び出されない。絶対使用しない。
+	f, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 }
