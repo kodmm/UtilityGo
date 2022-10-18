@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"uber-go/multierr"
 )
 
 func fetchCapacity(ctx context.Context, key string) (int, error) {
@@ -68,5 +69,19 @@ func main() {
 
 	if ew.err != nil {
 		return ew.err
+	}
+
+	var merr error
+	for _, file := range files {
+		err := importFile(file)
+		if err != nil {
+			// エラーが発生した場合はmultierrにerrorを格納して、次の処理を継続
+			merr = multierr.Append(merr, err)
+		}
+	}
+
+	// エラーが一度でも発生していれば、呼び出し元にエラーを返却
+	if merr != nil {
+		return merr
 	}
 }
