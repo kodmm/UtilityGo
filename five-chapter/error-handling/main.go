@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -22,6 +23,18 @@ func fetchCapacity(ctx context.Context, key string) (int, error) {
 		return -1, err
 	}
 	return capacity, nil
+}
+
+type errWriter struct {
+	w   io.Writer
+	err error
+}
+
+func (ew *errWriter) write(buf []byte) {
+	if ew.err != nil {
+		return
+	}
+	_, ew.err = ew.w.Write(buf)
 }
 
 func main() {
@@ -48,4 +61,12 @@ func main() {
 	}
 	defer f.Close()
 
+	ew := &errWriter{w: fd}
+	ew.write(p0[a:b])
+	ew.write(p1[c:d])
+	ew.write(p2[e:f])
+
+	if ew.err != nil {
+		return ew.err
+	}
 }
