@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -16,6 +17,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = errors.New("some error")
+	//! %wは fmt.Errorf独自の機能
+	fmt.Printf("%w", err)
 }
 
 func a() (string, error) {
