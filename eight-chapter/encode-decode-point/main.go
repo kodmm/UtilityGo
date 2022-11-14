@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 type user struct {
@@ -20,6 +22,11 @@ type Bottle struct {
 	Name  string `json:"name"`
 	Price int    `json:"price,omitempty"`
 	KCal  *int   `json:"kcal,omitempty"` // *intのポインター型で宣言する
+}
+
+type Rectangle struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
 }
 
 func main() {
@@ -55,6 +62,24 @@ func main() {
 	}
 	out, _ := json.Marshal(bottle)
 	fmt.Println(string(out))
+
+	s := `{
+		"width": 5,
+		"height": 10,
+		"radius": 6
+	}`
+
+	var rect Rectangle
+	d := json.NewDecoder(bytes.NewReader([]byte(s)))
+
+	// 想定していないJSONフィールドが存在している場合はバリデーションとしてエラーをするための記述
+	d.DisallowUnknownFields()
+
+	if err := d.Decode(&rect); err != nil {
+		// Error Handling
+		log.Fatal(err)
+	}
+
 }
 
 func Int(v int) *int {
