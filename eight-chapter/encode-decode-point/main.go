@@ -11,6 +11,11 @@ type user struct {
 	Languages []string `json:"languages"`
 }
 
+type FormInput struct {
+	Name        string `json:"name"`
+	CompanyName string `json:"company_name,omitempty"`
+}
+
 func main() {
 	u := user{
 		UserID:   "001",
@@ -30,4 +35,10 @@ func main() {
 	b, _ = json.Marshal(u)
 	fmt.Println(string(b))
 	// {"user_id":"","user_name":"","languages":[]}
+
+	in := FormInput{
+		Name: "Nissy",
+	}
+	b, _ = json.Marshal(in)
+	fmt.Println(string(b))
 }
