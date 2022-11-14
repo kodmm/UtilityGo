@@ -16,6 +16,12 @@ type FormInput struct {
 	CompanyName string `json:"company_name,omitempty"`
 }
 
+type Bottle struct {
+	Name  string `json:"name"`
+	Price int    `json:"price,omitempty"`
+	KCal  *int   `json:"kcal,omitempty"` // *intのポインター型で宣言する
+}
+
 func main() {
 	u := user{
 		UserID:   "001",
@@ -41,4 +47,16 @@ func main() {
 	}
 	b, _ = json.Marshal(in)
 	fmt.Println(string(b))
+
+	bottle := Bottle{
+		Name:  "ミネラルウォーター",
+		Price: 0,
+		KCal:  Int(0),
+	}
+	out, _ := json.Marshal(bottle)
+	fmt.Println(string(out))
+}
+
+func Int(v int) *int {
+	return &v
 }
