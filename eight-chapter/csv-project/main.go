@@ -24,6 +24,9 @@ func main() {
 
 	// 区切り文字をカンマ(,)から変えたい場合はCommaフィールドを書き換える。
 	// r.Comma = '\t'
+
+	r.Comment = '#' // # で始まる行をコメントとみなし、取り込みをスキップ
+
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
