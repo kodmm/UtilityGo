@@ -18,6 +18,10 @@ func main() {
 	defer f.Close()
 
 	r := csv.NewReader(bom.NewReader(f)) // BOMの回避
+
+	// Shift-JIS を扱う
+	// r := csv.NewReader(transform.NewReader(f, japanese.ShiftJIS.NewDecoder()))
+
 	// 区切り文字をカンマ(,)から変えたい場合はCommaフィールドを書き換える。
 	// r.Comma = '\t'
 	for {
