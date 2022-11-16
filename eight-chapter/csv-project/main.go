@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/spkg/bom"
 )
 
 func main() {
@@ -15,7 +17,7 @@ func main() {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
+	r := csv.NewReader(bom.NewReader(f)) // BOMの回避
 	// 区切り文字をカンマ(,)から変えたい場合はCommaフィールドを書き換える。
 	// r.Comma = '\t'
 	for {
