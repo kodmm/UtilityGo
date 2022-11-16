@@ -7,8 +7,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/gocarina/gocsv"
 	"github.com/spkg/bom"
 )
+
+type Country struct {
+	Name       string `csv:"国名"`
+	ISOCode    string `csv:"ISOコード"`
+	Population int    `csv:"人工"`
+}
 
 func main() {
 	f, err := os.Open("country.csv")
@@ -66,4 +73,37 @@ func main() {
 	if err := w.Error(); err != nil {
 		log.Fatal(err)
 	}
+
+	lines := []Country{
+		{Name: "アメリカ合衆国", ISOCode: "US/USA", Population: 310232863},
+		{Name: "日本", ISOCode: "JP/JPN", Population: 126288000},
+		{Name: "中国", ISOCode: "CN/CHN", Population: 1330044000},
+	}
+
+	fileA, err := os.Create("country2.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fileA.Close()
+
+	// CSVヘッダーが不要な場合は、gocsv.MarshalWithoutHeaders(&lines, fileA)を使用する。
+	if err := gocsv.MarshalFile(&lines, fileA); err != nil {
+		log.Fatal(err)
+	}
+
+	fileB, err := os.Open("country2.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	var linesB []Country
+	if err := gocsv.UnmarshalFile(fileB, &linesB); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, v := range linesB {
+		fmt.Printf("%#v\n", v)
+	}
+
 }
