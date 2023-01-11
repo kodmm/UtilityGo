@@ -58,6 +58,15 @@ func main() {
 	}
 	defer file.Close()
 
+	// encoding/csvの設定をgocarina/gocsvに引き継ぐ
+	fn := func(in io.Reader) gocsv.CSVReader {
+		r := csv.NewReader(bom.NewReader(in))
+		r.Comma = '\t'
+		r.Comment = '#'
+		return r
+	}
+	gocsv.SetCSVReader(fn)
+
 	w := csv.NewWriter(file)
 
 	// 区切り文字
