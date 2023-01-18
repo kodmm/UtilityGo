@@ -54,4 +54,19 @@ func main() {
 	if err := rows.Err(); err != nil {
 		log.Fatalf("scan users: %v", err)
 	}
+
+	var(
+		userName string
+		createdAt time.Time
+	)
+	row := db.QueryRowContext(ctx, `SELECT user_name, created_at FROM users WHERE user_id = $1;`, userID)
+	if err = row.Scan(&userName, &createdAt)
+	if err != nil {
+		log.Fatalf("query row(user_id=%s): %v", userID, err)
+	}
+	u := User{
+		UserID: userID,
+		UserName: userName,
+		CreatedAt: createdAt,
+	}
 }
