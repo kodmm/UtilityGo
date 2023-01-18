@@ -1,6 +1,7 @@
 package main
 
 import(
+	"context"
 	"database/sql"
 	"log"
 	"time"
@@ -60,7 +61,7 @@ func main() {
 		createdAt time.Time
 	)
 	row := db.QueryRowContext(ctx, `SELECT user_name, created_at FROM users WHERE user_id = $1;`, userID)
-	if err = row.Scan(&userName, &createdAt)
+	err = row.Scan(&userName, &createdAt)
 	if err != nil {
 		log.Fatalf("query row(user_id=%s): %v", userID, err)
 	}
@@ -68,5 +69,21 @@ func main() {
 		UserID: userID,
 		UserName: userName,
 		CreatedAt: createdAt,
+	}
+
+	type Service struct {
+		db *sql.DB
+	}
+
+	func (s *Service) UpdateProduct(ctx context.Context, productID, string) error {
+		tx, err := s.db.Begin()
+		if err != nil {
+			return err
+		}
+		if _, err := tx.ExecContext(ctx, "UPDATE products SET price = 200 WHERE product_id = $1", productID); err != nil {
+			tx.Rollback()
+			return err
+		}
+		return tx.Commit()
 	}
 }
