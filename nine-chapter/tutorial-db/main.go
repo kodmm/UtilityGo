@@ -136,4 +136,16 @@ func main() {
 		}
 		return s.tx.Transaction(ctx, updateFunc)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+
+	// クエリーはコンテキストによって5秒後にキャンセルされます
+	if _, err := db.ExecContext(ctx, "SELECT pg_sleep(100)"); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			log.Println("canceling query")
+		} else {
+			// error handling
+		}
+	}
 }
