@@ -86,4 +86,18 @@ func main() {
 		}
 		return tx.Commit()
 	}
+
+	func (s *Service) UpdateProducte2(ctx context.Context, productID string) (err error) {
+		tx, err := s.db.Begin()
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback()
+
+		if _, err := tx.ExecContext(ctx, "UPDATE products SET price = 200 WHERE product_id = $1", productID); err != nil {
+			return err
+		}
+
+		return tx.Commit()
+	}
 }
