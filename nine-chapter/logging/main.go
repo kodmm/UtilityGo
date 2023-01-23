@@ -78,4 +78,30 @@ func main() {
 	if err := tx.Commit(); err != nil {
 		// errorhandling
 	}
+
+	// Insert Multiple Rows
+	/*
+		INSET INTO products (product_no, name, price) VALUES
+		(1, 'otya', 120),
+		(2, 'coffee', 240),
+		(3, 'orange juice', 100),
+	*/
+
+	// VALUES に記述する文字列を組み立てる
+	valueStrings := make([]string, 0, len(users))
+	valueArgs := make([]interface{}, 0, len(users)*2) /* 追加したい項目数 (user_id, user_name) */
+
+	number := 1
+	for _, u := range users {
+		valueStrings = append(valueStrings, fmt.Sprintf(" ($%d, $%d)", number, number+1))
+		valueArgs = append(valueArgs, u.UserID)
+		valueArgs = append(valueArgs, u.userName)
+
+		number += 2
+	}
+	query := fmt.Sprintf("INSERT INTO users (user_id, user_name) VALUES %s;", strings.Join(valueStrings, ","))
+	if _, err := db.ExecContext(ctx, query, valueArgs...); err != nil {
+		// error handling
+	}
+)
 }
