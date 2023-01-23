@@ -51,4 +51,31 @@ func main() {
 	if err := rows.Error(); err != nil {
 		log.Fatal(err)
 	}
+
+	users := []User{
+		{"0001", "Gopher"},
+		{"0002", "Ferris"},
+		{"0003", "Duke"},
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// プリペアードステートメントの構築
+	stmt, err := tx.PrepareContext(ctx, "INSERT INTO users(user_id, user_name, created_at)VALUES($1, $2, $3);")
+	if err != nil {
+		// error handling
+	}
+	defer stmt.Close()
+
+	for _, u := range users {
+		// 構築したプリペアードステートメントにパラメータをセットし、実行
+		if _, err := stmt.ExecContext(ctx, u.UserID, u.UserName); err != nil {
+			// error handling
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		// errorhandling
+	}
 }
