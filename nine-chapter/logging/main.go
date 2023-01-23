@@ -103,5 +103,22 @@ func main() {
 	if _, err := db.ExecContext(ctx, query, valueArgs...); err != nil {
 		// error handling
 	}
+
+	conn, err := pgx.Connect(context.Background(), "postgres://testuser:pass@localhost:5432/testdb")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	txn, err := conn.Begin(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows := []interface{}{
+		{1, "onigiri", 120},
+		{2, "pann", 300},
+		{3, "お茶", 100},
+	}
+
+	_, err = txn.CopyFrom(ctx, pgx.Indentifier{"products"}, []string{"product_no", "name", "price"}, pgx.CopyFromRows(rows))
 )
 }
