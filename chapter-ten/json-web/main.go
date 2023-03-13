@@ -2,14 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
+
+	"github.com/vektah/gqlparser/v2/validator"
 )
 
 type Comment struct {
-	Message  string
-	UserName string
+	Message  string `validate:"required,min=1,max=140"`
+	UserName string `validate:"required,min=1,max=15"`
 }
 
 func main() {
@@ -34,6 +38,25 @@ func main() {
 				http.Error(w, fmt.Sprintf(`{"status": "%s"}`, err), http.StatusInternalServerError)
 				return
 			}
+
+			validate := validator.New()
+			if err := validate.Struct(c); err != nil {
+				var out []string
+				var ve validator.ValidationErrors
+				if errors.As(err, &ve) {
+					for _, fe := range ve {
+						switch fe.Field() {
+						case "Message":
+							out = append(out, fmt.Sprintf("Messageは1 ~ 140文字です"))
+						case "UserName":
+							out = append(out, fmt.Sprintf("Messageは1 ~ 15文字です"))
+						}
+					}
+				}
+				http.Error(w, fmt.Sprintf(`{"status": "%s"}`, strings.Join(out, ",")), http.StatusBadRequest)
+				return
+			}
+
 			mutex.Lock() //同時にアクセスを防ぐためのロック。本来はDBに保存する処理を代替
 			comments = append(comments, c)
 			mutex.Unlock()
