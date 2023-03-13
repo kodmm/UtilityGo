@@ -74,6 +74,28 @@ func main() {
 			http.Error(w, `{"status": "permit only GET or POST"}`, http.StatusMethodNotAllowed)
 		}
 	})
+
+	http.HandleFunc("/params", func(w http.ResponseWriter, r *http.Request) {
+		// FormValue()を呼ぶ場合は
+		// ParseForm()メソッドの呼び出しは省略可
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		word := r.FormValue("searchword")
+		log.Printf("searchword = %s\n", word)
+
+		words, ok := r.Form["searchword"]
+		log.Printf("search words = %v has values %v", words, ok)
+
+		log.Printf("all queries")
+		for key, values := range r.Form {
+			log.Printf(" %s : %v\n", key, values)
+		}
+	})
+
 	http.ListenAndServe(":8888", nil)
 
 	s := `{"Title": "Real World HTTP", "Price": 0}`
