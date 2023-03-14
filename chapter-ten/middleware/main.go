@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"log"
 	"net/http"
 )
@@ -63,9 +65,46 @@ func Healthz(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
+func NewMiddlewareTx(db *sql.DB) func(http.Handler) http.Handler {
+	return func(wrappedHandler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tx, _ := db.Begin()
+			lrw := NewLoggingResponseWriter(w)
+			r = r.WithContext(context.WithValue(r.Context(), "tx", tx))
+
+			wrappedHandler.ServeHTTP(lrw, r)
+
+			statusCode := lrw.statusCode
+			if 200 <= statusCode && statusCode < 400 {
+				log.Println("transaction commited")
+				tx.Commit()
+			} else {
+				log.Print("transaction rolling back due to status code: ", statusCode)
+				tx.Rollback()
+			}
+		})
+	}
+}
+
+func extractTx(r *http.Request) *sql.Tx {
+	tx, ok := r.Context().Value("tx").(*sql.Tx)
+	if !ok {
+		panic("transaction middleware is not supported")
+	}
+	return tx
+}
+
 func main() {
+	db := openDB() // *sql.DBを取得
+	tx := NewMiddlewareTx(db)
+	http.Handle("/comments", tx(Recovery(http.HandlerFunc(Comments))))
 	http.Handle("/healthz", MiddlewareLogging(http.HandlerFunc(Healthz)))
 	http.Handle("/health", Recovery(MiddlewareLogging(http.HandlerFunc(Healthz))))
 	http.ListenAndServe(":8888", nil)
 
+}
+
+func Comments(w http.ResponseWriter, r *http.Request) {
+	tx := extractTx(r)
+	//DBアクセス処理
 }
