@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 )
 
 type loggingResponseWriter struct {
@@ -108,4 +109,17 @@ func main() {
 func Comments(w http.ResponseWriter, r *http.Request) {
 	tx := extractTx(r)
 	//DBアクセス処理
+}
+
+// 1秒ごとに1回までに制限するリミッター, バーストは10
+var limit = rate.NewLimitter(rate.Every(time.Second/1), 10)
+
+func limitHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !limit.Allow() {
+			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

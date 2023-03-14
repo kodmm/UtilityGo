@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
@@ -94,6 +96,40 @@ func main() {
 		for key, values := range r.Form {
 			log.Printf(" %s : %v\n", key, values)
 		}
+	})
+
+	http.HandleFunc("/file", func(w http.ResponseWriter, r *http.Request) {
+		// ParseMultipartForm()メソッドの
+		// 呼び出しは省略可だが、省略時は32MBになる
+		err := r.ParseMultipartForm(32 * 1024 * 1024)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// ファイルを取り出してストレージに取り出す
+		f, h, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		log.Println(h.Filename)
+		o, err := os.Create(h.Filename)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer o.Close()
+		_, err = io.Copy(o, f)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// ファイルと一緒に送信されたデータの取得
+		value := r.PostFormValue("data")
+		log.Printf(" value = %s\n", value)
+
 	})
 
 	http.ListenAndServe(":8888", nil)
