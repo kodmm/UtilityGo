@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
+	"net"
 	"net/http"
 	"time"
 )
@@ -41,6 +43,53 @@ type basicAuthRoundTripper struct {
 func (rt *basicAuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.SetBasicAuth(rt.username, rt.password)
 	return rt.base.RoundTrip(req)
+}
+
+type retryableRoundTripper struct {
+	base     http.RoundTripper
+	attempts int
+	waitTime time.Duration
+}
+
+func (rt *retryableRoundTripper) shouldRetry(resp *http.Response, err error) bool {
+	// ネットワークによるリトライ
+	if err != nil {
+		var netErr net.Error
+		if errors.As(err, &netErr) {
+			return true
+		}
+	}
+
+	// レスポンスコードによるリトライ
+	if resp != nil {
+		if resp.StatusCode == 429 || (500 <= resp.StatusCode && resp.StatusCode <= 504) {
+			return true
+		}
+	}
+
+	// リトライすべきではないため、リトライしない
+	return false
+}
+
+func (rt *retryableRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	var (
+		resp *http.Response
+		err  error
+	)
+	for count := 0; count < rt.attempts; count++ {
+		resp, err = rt.base.RoundTrip(req)
+
+		if !rt.shouldRetry(resp, err) {
+			return resp, err
+		}
+
+		select {
+		case <-req.Context().Done():
+			return nil, req.Context().Err()
+		case <-time.After(rt.waitTime): // リトライのため待機
+		}
+	}
+	return resp, err
 }
 
 type User struct {
