@@ -4,18 +4,31 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 )
 
 type customRoundTripper struct {
-	base http.RoundTripper
+	transport http.RoundTripper
+	logger    func(string, ...interface{})
 }
 
-func (c customRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t customRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	// << リクエスト前の実施したい処理を追加 >>
-	resp, err := c.base.RoundTrip(req)
+	if t.logger == nil {
+		t.logger = log.Printf
+	}
+	start := time.Now()
+
+	resp, err := t.transport.RoundTrip(req)
+
 	// << リクエスト後に実施したい処理を追加 >>
+	if resp != nil {
+		t.logger("%s %s %d %s, duration: %d", req.Method, req.URL.String(), resp.StatusCode, http.StatusText(resp.StatusCode),
+			time.Since(start))
+	}
+
 	return resp, err
 }
 
@@ -45,7 +58,7 @@ func main() {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &customRoundTripper{
-			base: http.DefaultTransport,
+			transport: http.DefaultTransport,
 		},
 	}
 
