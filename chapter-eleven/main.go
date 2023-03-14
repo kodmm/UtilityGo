@@ -8,6 +8,17 @@ import (
 	"time"
 )
 
+type customRoundTripper struct {
+	base http.RoundTripper
+}
+
+func (c customRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	// << リクエスト前の実施したい処理を追加 >>
+	resp, err := c.base.RoundTrip(req)
+	// << リクエスト後に実施したい処理を追加 >>
+	return resp, err
+}
+
 type User struct {
 	Name string
 	Addr string
@@ -32,8 +43,10 @@ func main() {
 	defer resp.Body.Close()
 
 	client := &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: http.DefaultTransport,
+		Timeout: 10 * time.Second,
+		Transport: &customRoundTripper{
+			base: http.DefaultTransport,
+		},
 	}
 
 	// Getリクエストの生成
