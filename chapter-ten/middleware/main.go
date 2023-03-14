@@ -97,8 +97,9 @@ func extractTx(r *http.Request) *sql.Tx {
 func main() {
 	db := openDB() // *sql.DBを取得
 	tx := NewMiddlewareTx(db)
+	h := MiddlewareLogging(http.HandlerFunc(Healthz))
 	http.Handle("/comments", tx(Recovery(http.HandlerFunc(Comments))))
-	http.Handle("/healthz", MiddlewareLogging(http.HandlerFunc(Healthz)))
+	http.Handle("/healthz", http.TimeoutHandler(h, 5, "request timeout"))
 	http.Handle("/health", Recovery(MiddlewareLogging(http.HandlerFunc(Healthz))))
 	http.ListenAndServe(":8888", nil)
 
