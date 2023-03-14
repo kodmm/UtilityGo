@@ -10,6 +10,19 @@ type loggingResponseWriter struct {
 	statusCode int
 }
 
+func Recovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// recoverを使ってハンドラーで発生した panicから復帰
+		defer func() {
+			if err := recover(); err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
 func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 	return &loggingResponseWriter{w, http.StatusOK}
 }
@@ -21,7 +34,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 
 func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
 	if lrw.statusCode >= 400 {
-		log.Printf("Reponse Body: %s", b)
+		log.Printf("Response Body: %s", b)
 	}
 	return lrw.ResponseWriter.Write(b)
 }
@@ -52,6 +65,7 @@ func Healthz(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.Handle("/healthz", MiddlewareLogging(http.HandlerFunc(Healthz)))
+	http.Handle("/health", Recovery(MiddlewareLogging(http.HandlerFunc(Healthz))))
 	http.ListenAndServe(":8888", nil)
 
 }
