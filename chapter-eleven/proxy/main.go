@@ -34,8 +34,11 @@ func main() {
 	// クライアントを作成
 	hc := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: cfg,
-			Proxy:           http.ProxyFromEnvironment, //要設定
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			}, // 検証無効化にする方法
+			// TLSClientConfig: cfg,
+			Proxy: http.ProxyFromEnvironment, //要設定
 		},
 	}
 
