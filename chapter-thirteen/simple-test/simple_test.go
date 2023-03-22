@@ -1,7 +1,8 @@
-package simpletest
+package simpletest_test
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -71,7 +72,9 @@ func TestCalc(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := Calc(tt.args.a, tt.args.b, tt.args.operator)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Calc() err = %v, hasErr %v", err, tt.wantErr)
@@ -82,4 +85,86 @@ func TestCalc(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMain(m *testing.M) {
+	// 1. テスト全体の実行前
+	setup()
+
+	// 6.テスト全体の実行後
+	defer teardown()
+
+	m.Run()
+}
+
+func setup() {}
+
+func teardown() {}
+
+func TestHoge(t *testing.T) {
+	type args struct {
+		a int
+		b int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// テストケース
+	}
+
+	// 2.テスト関数の実行前
+	defer func() {
+		// 5. テスト関数の実行後
+	}()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 3. テストケースの実行前
+			defer func() {}(
+			// 4. テストケースの実行後
+			)
+
+			got, err := Hoge(tt.args.a, tt.args.b)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("failed")
+			}
+			if got != tt.want {
+				t.Errorf("Hoge() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+}
+
+type User struct {
+	UserID    string
+	UserName  string
+	Languages []string
+}
+
+func TestTom(t *testing.T) {
+	tom := User{
+		UserID:    "0001",
+		UserName:  "Tom",
+		Languages: []string{"java", "go"},
+	}
+
+	tom2 := User{
+		UserID:    "0001",
+		UserName:  "Tom",
+		Languages: []string{"java", "go"},
+	}
+
+	if !reflect.DeepEqual(tom, tom2) {
+		t.Errorf("User tom is mismatch, tom=%v tom2=%v", tom, tom2)
+	}
+}
+
+func TestByTestify(t *testing.T) {
+	result, err := Calc(1, 2, "+")
+	assert.Nil(t, err)
+	assert.Equal(t, 3, result)
 }
