@@ -77,4 +77,32 @@ func TestNextMonth(t *testing.T) {
 	assert.Equal(t, time.January, NextMonth(ctx))
 }
 
+func AppendSlice(count, value int) []int {
+	res := []int{}
+	for i := 0; i < count; i++ {
+		res = append(res, value)
+	}
+	return res
+}
 
+func FirstAllocSlice(count, value int) []int {
+	res := make([]int, count)
+	for i := 0; i < count; i++ {
+		res[i] = value
+	}
+	return res
+}
+
+
+// go test -benchmem -bench Benchmark package_name
+func BenchmarkAppendSlice(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		AppendSlice(10000, 111)
+	}
+} 
+
+func BenchmarkFirstAllocSlice(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		FirstAllocSlice(10000, 111)
+	}
+}
