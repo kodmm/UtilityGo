@@ -176,3 +176,63 @@ func TestByTestify(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 3, result)
 }
+
+func TestX(t *testing.T) {
+	type X struct {
+		numUnExport int
+		NumExport   int
+	}
+
+	num1 := X{100, -1}
+	num2 := X{999, -1}
+
+	opt := cmp.AllowUnexported(X{})
+
+	if diff := cmp.Diff(num1, num2, opt); diff != "" {
+		t.Errorf("X value is mismatch (-num1 +num2):%s\n", diff)
+	}
+
+	// IgnoreUnexoprted
+	opt2 := cmpopts.IgnoreUnexoprted(X{})
+	if diff := cmp.Diff(num1, num2, opt2); diff != "" {
+		t.Errorf("X value is mismatch (-num1 +num2):%s\n", diff)
+	}
+
+	// IgnoreFieldsで特定のフィールドを比較対象から除外
+	type Y struct {
+		NumExport int
+		CreatedAt time.Time
+		UpdatedAt time.Time
+	}
+
+	yum := Y{-1, time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Now()}
+	yum2 := Y{-1, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), time.Now()}
+
+	opt3 := cmpopts.IgnoreFields(X{}, "CreatedAt", "UpdatedAt")
+
+	if diff := cmp.Diff(yum, yum2, opt3); diff != "" {
+		t.Errorf("X value is mismatch (-num1 +num2):%s\n", diff)
+	}
+
+}
+
+func TestZ(t *testing.T) {
+	type Z struct {
+		NumExport int
+		numUnExport int
+		CreatedAt time.Time
+		UpdatedAt time.Time
+	}
+
+	num1 := Z{100, -1, time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Now()}
+	num2 := Z{999, -100, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), time.Now()}
+
+	opts := []cmp{
+		cmpopts.IgnoreUnexoprted(X{}),
+		cmpopts.IgnoreFields(X{}, "CreatedAt", "UpdatedAt")
+	}
+
+	if diff := cmp.Diff(num1, num2, opts...); diff != "" {
+		t.Errorf("X value is mismatch (-num1 +num2):%s\n", diff)
+	}
+}
