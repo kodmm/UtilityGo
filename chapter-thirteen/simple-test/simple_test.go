@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 func Add(a, b int) int {
@@ -160,6 +163,11 @@ func TestTom(t *testing.T) {
 
 	if !reflect.DeepEqual(tom, tom2) {
 		t.Errorf("User tom is mismatch, tom=%v tom2=%v", tom, tom2)
+	}
+
+	// go-cmp の Diffを使って値を比較
+	if diff := cmp.Diff(tom, tom2); diff != "" {
+		t.Errorf("User value is mismatch (-tom +tom2): \n%s", diff)
 	}
 }
 
