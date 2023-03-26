@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync/atomic"
+
+	"github.com/aws/aws-sdk-go-v2/aws/ratelimit"
 )
 
 type Task string
@@ -103,4 +105,25 @@ func fixedTasks(taskSrcs []Task) int64 {
 		}
 	}
 	return size
+}
+
+func main() {
+	tasks := make(chan Task)
+	results := make(chan Result)
+	rl := ratelimit.New(100) // 秒間100回
+	// ワーカーを起動
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go workerWithRateLimit(rl, tasks, results)
+	}
+}
+
+func workerWithRateLimit(rt ratelimit.Limiter, tasks <-chan Task, results chan<- Result) {
+	for t := range tasks {
+		rt.Take() // 待つ
+		//  秒間呼び出し回数の限界がある何かを実行
+		result := Result{
+			Task: t,
+		}
+		results <- result
+	}
 }
