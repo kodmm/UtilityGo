@@ -74,3 +74,33 @@ func TotalFileSize() int64 {
 		}
 	}
 }
+
+func fixedTasks(taskSrcs []Task) int64 {
+	// タスクの全量がわかっているなら、あらかじめ全部チャネルに入れてしまうのがシンプル
+	tasks := make(chan Task, len(taskSrcs))
+	results := make(chan Result)
+	for _, src := range taskSrcs {
+		tasks <- src
+	}
+	close(tasks)
+	// コア数分ワーカーを起動
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go worker(i, tasks, results)
+	}
+	// 結果を受け取りつつ、全タスクの完了を待つ
+	var count int
+	var size int64
+	for {
+		result := <-results
+		count += 1
+		if result.Err != nil {
+			fmt.Printf("err %v for %s\n", result.Err, result.Task)
+		} else {
+			size += result.Value
+		}
+		if count == len(taskSrcs) {
+			break
+		}
+	}
+	return size
+}
