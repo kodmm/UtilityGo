@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
 	"time"
 
@@ -147,4 +148,43 @@ func RetrieveToken(ctx context.Context) (string, error) {
 		return "", errors.New("Token is not registered")
 	}
 	return token, nil
+}
+
+func RegisterToken2(req *http.Request, token string) *http.Request {
+	ctx := context.WithValue(req.Context(), tokenContextKey, token)
+	return req.WithContext(ctx)
+}
+
+var logContextKey = struct{}{}
+
+type LogRecord struct {
+	start         time.Time
+	Duration      time.Duration
+	DBAccessCount int
+}
+
+func StartLogging(req *http.Request) *http.Request {
+	l := &LogRecord{
+		start: time.Now(),
+	}
+	ctx := context.WithValue(req.Context(), logContextKey, l)
+	return req.WithContext(ctx)
+}
+
+func CountAccess(ctx context.Context) error {
+	l, ok := ctx.Value(logContextKey).(*LogRecord)
+	if !ok {
+		return errors.New("Logger is not registered")
+	}
+	l.DBAccessCount += 1
+	return nil
+}
+
+func FinishLogging(req *http.Request) (*LogRecord, error) {
+	l, ok := req.Context().Value(logContextKey).(*LogRecord)
+	if !ok {
+		return nil, errors.New("Logger is not registered")
+	}
+	l.Duration = time.Now().Sub(l.start)
+	return l, nil
 }
