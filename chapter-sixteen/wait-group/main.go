@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -132,4 +133,18 @@ func MakeFuturePromise() (*Future, *Promise) {
 		f: f,
 	}
 	return f, p
+}
+
+var tokenContextKey = struct{}{}
+
+func RegisterToken(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, tokenContextKey, token)
+}
+
+func RetrieveToken(ctx context.Context) (string, error) {
+	token, ok := ctx.Value(tokenContextKey).(string)
+	if !ok {
+		return "", errors.New("Token is not registered")
+	}
+	return token, nil
 }
