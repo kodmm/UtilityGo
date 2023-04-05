@@ -188,3 +188,73 @@ func FinishLogging(req *http.Request) (*LogRecord, error) {
 	l.Duration = time.Now().Sub(l.start)
 	return l, nil
 }
+
+//! NGなケース
+go func() {
+	for {
+		task := <-tasks
+		// タスクを実行
+	}
+}()
+
+// チャネルクローズで終了できるようにする
+go func() {
+	// forはチャネルの終了で自然に抜ける
+	for task := range tasks {
+		// タスクを実行
+	}
+}()
+
+func Hoge() {
+	//! NGなケース
+	go func() {
+		count := 0
+		for {
+			ic <- count
+			count++
+		}
+	}()
+
+	// OKなケース
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		count := 0
+		for {
+			select {
+			case ic <- count:
+				ic <- count
+				count++
+			case <- ctx.Done():
+				return // timeout ect...
+			}
+		}
+	}()
+}
+
+type InfiniteCounter struct {
+	C chan int
+	exit chan struct{}{}
+}
+
+func NewInfiniteCounter() *InfiniteCounter {
+	r := &InInfiniteCounter{
+		C: make(chan int),
+		exit: make(chan struct{})
+	}
+	go func() {
+		count := 0
+		for {
+		case r.C <- count:
+			count++
+		case <-r.exit:
+			close(r.C)
+			return
+		}
+	}()
+	return r
+}
+
+func (ic *InfiniteCounter) Close() {
+	close(ic.exit)
+}

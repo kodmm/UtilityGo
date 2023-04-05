@@ -23,7 +23,7 @@ func main() {
 	for {
 		resp, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
 			Bucket:            aws.String("bucket-name"),         // バケット名を指定
-			Prefix:            aws.String("oreiily/2021/12/31/"), // oreiily/2021/12/31 から始まるファイルに絞る設定
+			Prefix:            aws.String("oreilly/2021/12/31/"), // oreiily/2021/12/31 から始まるファイルに絞る設定
 			ContinuationToken: token,
 		})
 		if err != nil {
